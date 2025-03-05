@@ -1,0 +1,17 @@
+/* Reset default margins and paddings */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure that the body takes up the full height of the viewport */
+html,
+body {
+  height: 100%;
+}
+
+/* Set a default font family */
+body {
+  font-family: Arial, sans-serif;
+}
