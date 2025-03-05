@@ -27,7 +27,7 @@ const PersonDetailPage = () => {
   return (
     <Layout style={styles.layout}>
       <Content style={styles.content}>
-        <Title level={2} style={styles.title}>
+        <Title level={1} style={styles.title}>
           {person.firstName} {person.lastName}
         </Title>
         <Title level={3} style={styles.sectionTitle}>
@@ -96,21 +96,22 @@ const styles = {
     maxWidth: '1200px',
     minHeight: '100vh',
     height: '100%',
-    borderLeft: '2px solid #000',
-    borderRight: '2px solid #000',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    // borderLeft: '2px solid #000',
+    // borderRight: '2px solid #000',
     margin: 'auto',
     background: '#fff',
     textAlign: 'center' as const,
   },
   content: {
     width: '100%',
-    padding: '20px',
     background: '#fff',
     textAlign: 'center' as const,
   },
   title: {
-    fontSize: '1.2rem',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
+    background: '#fafafa',
   },
   sectionTitle: {
     fontSize: '1rem',

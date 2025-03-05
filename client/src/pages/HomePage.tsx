@@ -4,6 +4,7 @@ import PersonForm from '../components/PersonForm';
 import CarForm from '../components/CarForm';
 import PersonCard from '../components/PersonCard';
 import {GET_PEOPLE_WITH_CARS} from '../graphql/queries';
+import type {Person} from '../types';
 
 const {Title, Text} = Typography;
 const {Content} = Layout;
@@ -30,7 +31,7 @@ const HomePage = () => {
         {data.people.length > 0 ? <CarForm /> : <Text>Please add Person.</Text>}
         <Divider style={styles.sectionDivider}>Records</Divider>
         {data.people.length > 0 ? (
-          data.people.map((person: any) => <PersonCard key={person.id} person={person} />)
+          data.people.map((person: Person) => <PersonCard key={person.id} person={person} />)
         ) : (
           <Text>No records found.</Text>
         )}
@@ -47,14 +48,15 @@ const styles = {
     maxWidth: '1200px',
     minHeight: '100vh',
     height: '100%',
-    borderLeft: '2px solid #000',
-    borderRight: '2px solid #000',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    // borderLeft: '2px solid #000',
+    // borderRight: '2px solid #000',
     margin: 'auto',
     background: '#fff',
     textAlign: 'center' as const,
   },
   title: {
-    fontSize: '1.2rem',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
   },
   sectionDivider: {

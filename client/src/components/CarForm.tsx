@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import {Form, Input, Button, Select, Spin, message} from 'antd';
 import {ADD_CAR} from '../graphql/mutations';
@@ -16,11 +16,6 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
   const {data, loading, error} = useQuery(GET_PEOPLE_WITH_CARS);
   const [form] = Form.useForm();
   const [, contextHolder] = message.useMessage();
-  const [, forceUpdate] = useState<{}>({});
-
-  useEffect(() => {
-    forceUpdate({});
-  }, []);
 
   const [addCar] = useMutation(ADD_CAR, {
     refetchQueries: [{query: GET_PEOPLE_WITH_CARS}],
@@ -41,7 +36,6 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
   });
 
   useEffect(() => {
-    console.log('Car in useEffect:', car);
     if (car) {
       form.setFieldsValue({
         year: car.year,
@@ -51,7 +45,7 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
         personId: personId,
       });
     }
-  }, [car, form]);
+  }, [car, form, personId]);
 
   const onFinish = (values: {
     year: string;
