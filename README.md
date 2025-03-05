@@ -35,7 +35,9 @@ http://localhost:5173/
 
 # Screenshot
 ### HomePage
-![image](https://github.com/user-attachments/assets/8a435e3b-63d1-486d-87c1-b76e5c99d94a)
+![screencapture-localhost-5173-2025-03-05-09_10_54_cropped](https://github.com/user-attachments/assets/762695e6-4327-4b02-b37a-82b305ede649)
+
 ### DetailedPage
-![image](https://github.com/user-attachments/assets/e1a90ef5-8771-4c9a-8aa8-0d970d3ee87d)
+![screencapture-localhost-5173-people-1-2025-03-05-09_12_56_cropped](https://github.com/user-attachments/assets/bf9b363d-dabd-4dcd-88eb-975ac9606148)
+
 
