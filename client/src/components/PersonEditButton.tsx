@@ -19,14 +19,16 @@ const PersonEditButton = ({person}: Props) => {
         style={styles.editButton}
         onClick={() => setIsEditing(true)}
       />
-      <Modal
-        title="Edit Person"
-        width={350}
-        open={isEditing}
-        onCancel={() => setIsEditing(false)}
-        footer={null}>
-        <PersonForm person={person} onEditComplete={() => setIsEditing(false)} />
-      </Modal>
+      {isEditing && (
+        <Modal
+          title="Edit Person"
+          width={350}
+          open={isEditing}
+          onCancel={() => setIsEditing(false)}
+          footer={null}>
+          <PersonForm person={person} onEditComplete={() => setIsEditing(false)} />
+        </Modal>
+      )}
     </>
   );
 };

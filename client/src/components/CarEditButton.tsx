@@ -20,14 +20,16 @@ const CarEditButton = ({car, personId}: Props) => {
         style={styles.editButton}
         onClick={() => setIsEditing(true)}
       />
-      <Modal
-        title="Edit Car"
-        width={350}
-        open={isEditing}
-        onCancel={() => setIsEditing(false)}
-        footer={null}>
-        <CarForm personId={personId} car={car} onEditComplete={() => setIsEditing(false)} />
-      </Modal>
+      {isEditing && (
+        <Modal
+          title="Edit Car"
+          width={350}
+          open={isEditing}
+          onCancel={() => setIsEditing(false)}
+          footer={null}>
+          <CarForm personId={personId} car={car} onEditComplete={() => setIsEditing(false)} />
+        </Modal>
+      )}
     </>
   );
 };
