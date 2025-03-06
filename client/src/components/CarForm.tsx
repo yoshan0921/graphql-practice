@@ -50,6 +50,7 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
   const [updateCar] = useMutation(UPDATE_CAR, {
     onCompleted: () => {
       message.success('Car updated successfully');
+      form.resetFields();
       if (onEditComplete) onEditComplete();
     },
     onError: error => message.error(`Error: ${error.message}`),
@@ -65,8 +66,7 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
     }
   };
 
-  if (loading)
-    return <Spin size="large" style={{display: 'block', margin: 'auto', marginTop: '20px'}} />;
+  if (loading) return <Spin size="small" style={styles.spinner} />;
   if (error) {
     message.error(`Error: ${error.message}`);
     return <p>Error loading data...</p>;
@@ -77,7 +77,7 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
       {contextHolder}
       <Form
         form={form}
-        name="carForm"
+        name={car ? 'carEditForm' : 'carAddForm'}
         onFinish={onFinish}
         initialValues={{
           year: car?.year,
@@ -205,5 +205,10 @@ const styles = {
   },
   cancelButton: {
     marginLeft: 10,
+  },
+  spinner: {
+    display: 'block',
+    margin: 'auto',
+    marginTop: '50px',
   },
 };

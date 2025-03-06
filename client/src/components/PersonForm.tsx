@@ -45,6 +45,7 @@ const PersonForm = ({person, onEditComplete}: Props) => {
   const [updatePerson] = useMutation(UPDATE_PERSON, {
     onCompleted: () => {
       message.success('Person updated successfully');
+      form.resetFields();
       if (onEditComplete) onEditComplete();
     },
     onError: error => message.error(`Error: ${error.message}`),
@@ -65,7 +66,7 @@ const PersonForm = ({person, onEditComplete}: Props) => {
       {contextHolder}
       <Form
         form={form}
-        name="personForm"
+        name={person ? 'personEditForm' : 'personAddForm'}
         onFinish={onFinish}
         initialValues={{
           firstName: person?.firstName,
