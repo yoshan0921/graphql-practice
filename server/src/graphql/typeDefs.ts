@@ -2,9 +2,9 @@ import {gql} from 'graphql-tag';
 
 export const typeDefs = gql`
   type Query {
-    people: [Person]
+    people: [Person!]!
     person(id: ID!): Person
-    cars: [Car]
+    cars: [Car!]!
     car(id: ID!): Car
   }
   type Mutation {
@@ -19,7 +19,7 @@ export const typeDefs = gql`
     id: ID!
     firstName: String
     lastName: String
-    cars: [Car]
+    cars: [Car]!
   }
   type Car {
     id: ID!
@@ -27,6 +27,6 @@ export const typeDefs = gql`
     make: String
     model: String
     price: String
-    person: Person
+    person: Person!
   }
 `;

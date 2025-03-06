@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {useMutation} from '@apollo/client';
 import {Form, Input, Button, message} from 'antd';
 import {ADD_PERSON, UPDATE_PERSON} from '../graphql/mutations';
@@ -13,9 +13,28 @@ type Props = {
 const PersonForm = ({person, onEditComplete}: Props) => {
   const [form] = Form.useForm();
   const [, contextHolder] = message.useMessage();
+  const [, forceUpdate] = useState({});
+
+  useEffect(() => {
+    forceUpdate({});
+  }, []);
 
   const [addPerson] = useMutation(ADD_PERSON, {
-    refetchQueries: [{query: GET_PEOPLE_WITH_CARS}],
+    // Appolo Client Cache update
+    update(cache, {data}) {
+      if (!data?.addPerson) return;
+
+      const existingData = cache.readQuery<{people: Person[]}>({
+        query: GET_PEOPLE_WITH_CARS,
+      });
+      if (!existingData || !existingData.people) return;
+      cache.writeQuery({
+        query: GET_PEOPLE_WITH_CARS,
+        data: {
+          people: [...existingData.people, {...data.addPerson, cars: data.addPerson.cars ?? []}],
+        },
+      });
+    },
     onCompleted: () => {
       message.success('Person added successfully');
       form.resetFields();
@@ -24,7 +43,6 @@ const PersonForm = ({person, onEditComplete}: Props) => {
   });
 
   const [updatePerson] = useMutation(UPDATE_PERSON, {
-    refetchQueries: [{query: GET_PEOPLE_WITH_CARS}],
     onCompleted: () => {
       message.success('Person updated successfully');
       if (onEditComplete) onEditComplete();
@@ -32,18 +50,10 @@ const PersonForm = ({person, onEditComplete}: Props) => {
     onError: error => message.error(`Error: ${error.message}`),
   });
 
-  useEffect(() => {
+  const onFinish = (values: Person) => {
+    const {firstName, lastName} = values;
     if (person) {
-      form.setFieldsValue({
-        firstName: person.firstName,
-        lastName: person.lastName,
-      });
-    }
-  }, [person, form]);
-
-  const onFinish = (values: {firstName: string; lastName: string}) => {
-    if (person) {
-      updatePerson({variables: {id: person.id, ...values}});
+      updatePerson({variables: {id: person.id, firstName, lastName}});
     } else {
       addPerson({variables: {...values}});
       form.resetFields();
@@ -55,7 +65,12 @@ const PersonForm = ({person, onEditComplete}: Props) => {
       {contextHolder}
       <Form
         form={form}
+        name="personForm"
         onFinish={onFinish}
+        initialValues={{
+          firstName: person?.firstName,
+          lastName: person?.lastName,
+        }}
         layout={person ? 'horizontal' : 'inline'}
         style={styles.form}>
         <Form.Item
@@ -79,8 +94,13 @@ const PersonForm = ({person, onEditComplete}: Props) => {
                 type="primary"
                 htmlType="submit"
                 disabled={
-                  !form.isFieldsTouched(true) ||
-                  form.getFieldsError().filter(({errors}) => errors.length).length > 0
+                  person
+                    ? // For update
+                      (!form.isFieldTouched('firstName') && !form.isFieldTouched('lastName')) ||
+                      form.getFieldsError().filter(({errors}) => errors.length).length > 0
+                    : // For add
+                      !form.isFieldsTouched(true) ||
+                      form.getFieldsError().filter(({errors}) => errors.length).length > 0
                 }>
                 {person ? 'Update Person' : 'Add Person'}
               </Button>

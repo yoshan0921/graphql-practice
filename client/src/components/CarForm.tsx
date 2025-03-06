@@ -1,10 +1,9 @@
-import {useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import {Form, Input, Button, Select, Spin, message} from 'antd';
-import {ADD_CAR} from '../graphql/mutations';
-import {GET_PEOPLE_WITH_CARS} from '../graphql/queries';
-import {UPDATE_CAR} from '../graphql/mutations';
-import type {Car} from '../types';
+import {ADD_CAR, UPDATE_CAR} from '../graphql/mutations';
+import {GET_PEOPLE, GET_PEOPLE_WITH_CARS} from '../graphql/queries';
+import type {Person, Car} from '../types';
 
 type Props = {
   personId?: string;
@@ -13,12 +12,34 @@ type Props = {
 };
 
 const CarForm = ({personId, car, onEditComplete}: Props) => {
-  const {data, loading, error} = useQuery(GET_PEOPLE_WITH_CARS);
+  const {data, loading, error} = useQuery(GET_PEOPLE);
   const [form] = Form.useForm();
   const [, contextHolder] = message.useMessage();
+  const [, forceUpdate] = useState({});
+
+  useEffect(() => {
+    forceUpdate({});
+  }, []);
 
   const [addCar] = useMutation(ADD_CAR, {
-    refetchQueries: [{query: GET_PEOPLE_WITH_CARS}],
+    // Appolo Client Cache update
+    update(cache, {data}) {
+      if (!data?.addCar) return;
+
+      const existingData = cache.readQuery<{people: Person[]}>({
+        query: GET_PEOPLE_WITH_CARS,
+      });
+      if (!existingData || !existingData.people) return;
+      const updatedData = existingData.people.map(person =>
+        person.id === data.addCar.person.id
+          ? {...person, cars: [...person.cars, data.addCar]}
+          : person,
+      );
+      cache.writeQuery({
+        query: GET_PEOPLE_WITH_CARS,
+        data: {people: updatedData},
+      });
+    },
     onCompleted: () => {
       message.success('Car added successfully');
       form.resetFields();
@@ -27,7 +48,6 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
   });
 
   const [updateCar] = useMutation(UPDATE_CAR, {
-    refetchQueries: [{query: GET_PEOPLE_WITH_CARS}],
     onCompleted: () => {
       message.success('Car updated successfully');
       if (onEditComplete) onEditComplete();
@@ -35,27 +55,10 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
     onError: error => message.error(`Error: ${error.message}`),
   });
 
-  useEffect(() => {
+  const onFinish = (values: Car) => {
+    const {year, make, model, price, personId} = values;
     if (car) {
-      form.setFieldsValue({
-        year: car.year,
-        make: car.make,
-        model: car.model,
-        price: car.price,
-        personId: personId,
-      });
-    }
-  }, [car, form, personId]);
-
-  const onFinish = (values: {
-    year: string;
-    make: string;
-    model: string;
-    price: string;
-    personId: string;
-  }) => {
-    if (car) {
-      updateCar({variables: {id: car.id, ...values}});
+      updateCar({variables: {id: car.id, year, make, model, price, personId}});
     } else {
       addCar({variables: {...values}});
       form.resetFields();
@@ -74,14 +77,30 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
       {contextHolder}
       <Form
         form={form}
+        name="carForm"
         onFinish={onFinish}
+        initialValues={{
+          year: car?.year,
+          make: car?.make,
+          model: car?.model,
+          price: car?.price,
+          personId: personId,
+        }}
         layout={car ? 'horizontal' : 'inline'}
         style={styles.form}>
         <Form.Item
           name="year"
           label="Year"
           style={styles.formItem}
-          rules={[{required: true, message: 'Enter year'}]}>
+          rules={[
+            {required: true, message: 'Enter year'},
+            {
+              validator: (_, value) =>
+                !value || !isNaN(value)
+                  ? Promise.resolve()
+                  : Promise.reject('Year must be a number'),
+            },
+          ]}>
           <Input placeholder="Year" style={styles.inputXSmall} />
         </Form.Item>
         <Form.Item
@@ -133,8 +152,17 @@ const CarForm = ({personId, car, onEditComplete}: Props) => {
                 type="primary"
                 htmlType="submit"
                 disabled={
-                  !form.isFieldsTouched(true) ||
-                  form.getFieldsError().filter(({errors}) => errors.length).length > 0
+                  car
+                    ? // For update
+                      (!form.isFieldTouched('year') &&
+                        !form.isFieldTouched('make') &&
+                        !form.isFieldTouched('model') &&
+                        !form.isFieldTouched('price') &&
+                        !form.isFieldTouched('personId')) ||
+                      form.getFieldsError().filter(({errors}) => errors.length).length > 0
+                    : // For add
+                      !form.isFieldsTouched(true) ||
+                      form.getFieldsError().filter(({errors}) => errors.length).length > 0
                 }>
                 {car ? 'Update Car' : 'Add Car'}
               </Button>

@@ -12,20 +12,20 @@ type Props = {
 const PersonDelete = ({personId}: Props) => {
   const [, contextHolder] = message.useMessage();
   const [deletePerson] = useMutation(DELETE_PERSON, {
+    // Appolo Client Cache update
     update(cache, {data}) {
       if (!data?.deletePerson) return;
-
       const existingData = cache.readQuery<{people: Person[]}>({
         query: GET_PEOPLE_WITH_CARS,
       });
       if (!existingData || !existingData.people) return;
-      const updatedPeople = existingData.people.filter(
-        person => person.id !== data.deletePerson.id,
-      );
+      const updatedData = existingData.people.filter(person => person.id !== data.deletePerson.id);
       cache.writeQuery({
         query: GET_PEOPLE_WITH_CARS,
-        data: {people: updatedPeople},
+        data: {people: updatedData},
       });
+
+      cache.gc();
     },
     onCompleted: () => message.success('Person deleted successfully'),
     onError: error => message.error(`Error deleting person: ${error.message}`),

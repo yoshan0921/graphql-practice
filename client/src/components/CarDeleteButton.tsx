@@ -12,6 +12,7 @@ type Props = {
 const CarDelete = ({carId}: Props) => {
   const [, contextHolder] = message.useMessage();
   const [deleteCar] = useMutation(DELETE_CAR, {
+    // Appolo Client Cache update
     update(cache, {data}) {
       if (!data?.deleteCar) return;
 
